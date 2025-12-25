@@ -38,8 +38,9 @@ spec:
           cpu: 2000m
           memory: 4Gi
       
-      adminUser: "admin"
-      adminPassword: "admin123"
+      admin:
+        username: "admin"
+        password: "admin123"
       
       serviceType: ClusterIP
       servicePort: 8080
