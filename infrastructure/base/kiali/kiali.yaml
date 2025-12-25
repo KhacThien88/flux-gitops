@@ -1,0 +1,46 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kiali-server
+  namespace: istio-system
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: kiali-server
+      version: "2.x"
+      sourceRef:
+        kind: HelmRepository
+        name: kiali
+        namespace: flux-system
+      interval: 12h
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    auth:
+      strategy: anonymous
+    deployment:
+      accessible_namespaces:
+        - "**"
+      view_only_mode: false
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+    external_services:
+      prometheus:
+        url: "http://prometheus-server.monitoring:80"
+      grafana:
+        enabled: false
+      tracing:
+        enabled: false
+    server:
+      web_root: "/kiali"
+

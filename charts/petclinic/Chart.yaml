@@ -1,0 +1,18 @@
+apiVersion: v2
+name: petclinic
+description: Spring PetClinic Microservices Helm Chart
+type: application
+version: 1.0.0
+appVersion: "3.2.0"
+keywords:
+  - spring
+  - petclinic
+  - microservices
+  - istio
+  - service-mesh
+maintainers:
+  - name: KhacThien88
+    url: https://github.com/KhacThien88
+sources:
+  - https://github.com/spring-petclinic/spring-petclinic-microservices
+

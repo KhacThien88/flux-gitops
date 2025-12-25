@@ -1,0 +1,55 @@
+---
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: petclinic-gateway
+  namespace: petclinic
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: petclinic-ingress
+  namespace: petclinic
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - petclinic-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /api/gateway
+      route:
+        - destination:
+            host: api-gateway
+            port:
+              number: 8080
+      timeout: 30s
+      retries:
+        attempts: 3
+        perTryTimeout: 10s
+        retryOn: 5xx,reset,connect-failure
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: api-gateway
+            port:
+              number: 8080
+      timeout: 30s
+      retries:
+        attempts: 3
+        perTryTimeout: 10s
+        retryOn: 5xx,reset,connect-failure
+

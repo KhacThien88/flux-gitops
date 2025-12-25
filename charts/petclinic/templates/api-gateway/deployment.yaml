@@ -1,0 +1,76 @@
+{{- if .Values.apiGateway.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.apiGateway.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+    app: {{ .Values.apiGateway.name }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.apiGateway.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+    app: {{ .Values.apiGateway.name }}
+spec:
+  replicas: {{ .Values.apiGateway.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.apiGateway.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.apiGateway.name }}
+        app.kubernetes.io/part-of: petclinic
+      annotations:
+        {{- include "petclinic.istioAnnotations" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ .Values.apiGateway.name }}
+      containers:
+        - name: {{ .Values.apiGateway.name }}
+          image: "{{ .Values.apiGateway.image.repository }}:{{ .Values.apiGateway.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.apiGateway.service.port }}
+              name: http
+          env:
+            - name: SPRING_CLOUD_CONFIG_URI
+              value: {{ include "petclinic.configServerUrl" . | quote }}
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: {{ include "petclinic.discoveryServerUrl" . | quote }}
+          resources:
+            {{- toYaml .Values.apiGateway.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: {{ .Values.apiGateway.service.port }}
+            initialDelaySeconds: {{ .Values.apiGateway.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.apiGateway.probes.readiness.periodSeconds }}
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: {{ .Values.apiGateway.service.port }}
+            initialDelaySeconds: {{ .Values.apiGateway.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.apiGateway.probes.liveness.periodSeconds }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.apiGateway.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+    app: {{ .Values.apiGateway.name }}
+spec:
+  ports:
+    - port: {{ .Values.apiGateway.service.port }}
+      targetPort: {{ .Values.apiGateway.service.port }}
+      name: http
+  selector:
+    app: {{ .Values.apiGateway.name }}
+{{- end }}
+

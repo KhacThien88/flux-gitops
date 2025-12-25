@@ -1,0 +1,109 @@
+---
+# Deny all traffic by default in petclinic namespace
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all
+  namespace: petclinic
+spec:
+  {}
+---
+# Allow api-gateway to receive external traffic
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-api-gateway-ingress
+  namespace: petclinic
+spec:
+  selector:
+    matchLabels:
+      app: api-gateway
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: ["istio-system"]
+      to:
+        - operation:
+            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+---
+# Allow api-gateway to call all internal services
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-api-gateway-to-services
+  namespace: petclinic
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: petclinic
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/petclinic/sa/api-gateway"]
+---
+# Allow customers-service to call visits-service
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-customers-to-visits
+  namespace: petclinic
+spec:
+  selector:
+    matchLabels:
+      app: visits-service
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/petclinic/sa/customers-service"]
+---
+# Allow vets-service to be called by api-gateway only
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-gateway-to-vets
+  namespace: petclinic
+spec:
+  selector:
+    matchLabels:
+      app: vets-service
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/petclinic/sa/api-gateway"]
+---
+# Allow services to call config-server
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-services-to-config
+  namespace: petclinic
+spec:
+  selector:
+    matchLabels:
+      app: config-server
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: ["petclinic"]
+---
+# Allow services to call discovery-server (Eureka)
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-services-to-discovery
+  namespace: petclinic
+spec:
+  selector:
+    matchLabels:
+      app: discovery-server
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: ["petclinic"]
+

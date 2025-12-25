@@ -1,0 +1,192 @@
+# Default values for petclinic microservices
+# This is a YAML-formatted file.
+
+global:
+  # Namespace for all services
+  namespace: petclinic
+  
+  # Istio sidecar injection
+  istio:
+    enabled: true
+  
+  # Image pull policy
+  imagePullPolicy: IfNotPresent
+  
+  # Common labels
+  labels:
+    app.kubernetes.io/part-of: petclinic
+
+# Config Server
+configServer:
+  enabled: true
+  name: config-server
+  replicaCount: 1
+  image:
+    repository: springcommunity/spring-petclinic-config-server
+    tag: latest
+  service:
+    port: 8888
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  probes:
+    readiness:
+      initialDelaySeconds: 30
+      periodSeconds: 10
+    liveness:
+      initialDelaySeconds: 60
+      periodSeconds: 30
+
+# Discovery Server (Eureka)
+discoveryServer:
+  enabled: true
+  name: discovery-server
+  replicaCount: 1
+  image:
+    repository: springcommunity/spring-petclinic-discovery-server
+    tag: latest
+  service:
+    port: 8761
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  probes:
+    readiness:
+      initialDelaySeconds: 30
+      periodSeconds: 10
+    liveness:
+      initialDelaySeconds: 60
+      periodSeconds: 30
+
+# API Gateway
+apiGateway:
+  enabled: true
+  name: api-gateway
+  replicaCount: 1
+  image:
+    repository: springcommunity/spring-petclinic-api-gateway
+    tag: latest
+  service:
+    port: 8080
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  probes:
+    readiness:
+      initialDelaySeconds: 60
+      periodSeconds: 10
+    liveness:
+      initialDelaySeconds: 120
+      periodSeconds: 30
+
+# Customers Service
+customersService:
+  enabled: true
+  name: customers-service
+  replicaCount: 1
+  image:
+    repository: springcommunity/spring-petclinic-customers-service
+    tag: latest
+  service:
+    port: 8080
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  probes:
+    readiness:
+      initialDelaySeconds: 60
+      periodSeconds: 10
+    liveness:
+      initialDelaySeconds: 120
+      periodSeconds: 30
+  database:
+    url: "jdbc:hsqldb:mem:testdb"
+
+# Vets Service
+vetsService:
+  enabled: true
+  name: vets-service
+  replicaCount: 1
+  image:
+    repository: springcommunity/spring-petclinic-vets-service
+    tag: latest
+  service:
+    port: 8080
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  probes:
+    readiness:
+      initialDelaySeconds: 60
+      periodSeconds: 10
+    liveness:
+      initialDelaySeconds: 120
+      periodSeconds: 30
+  database:
+    url: "jdbc:hsqldb:mem:testdb"
+
+# Visits Service
+visitsService:
+  enabled: true
+  name: visits-service
+  replicaCount: 1
+  image:
+    repository: springcommunity/spring-petclinic-visits-service
+    tag: latest
+  service:
+    port: 8080
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  probes:
+    readiness:
+      initialDelaySeconds: 60
+      periodSeconds: 10
+    liveness:
+      initialDelaySeconds: 120
+      periodSeconds: 30
+  database:
+    url: "jdbc:hsqldb:mem:testdb"
+
+# Admin Server (optional)
+adminServer:
+  enabled: false
+  name: admin-server
+  replicaCount: 1
+  image:
+    repository: springcommunity/spring-petclinic-admin-server
+    tag: latest
+  service:
+    port: 9090
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+

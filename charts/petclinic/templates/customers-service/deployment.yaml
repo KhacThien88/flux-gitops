@@ -1,0 +1,78 @@
+{{- if .Values.customersService.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.customersService.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+    app: {{ .Values.customersService.name }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.customersService.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+    app: {{ .Values.customersService.name }}
+spec:
+  replicas: {{ .Values.customersService.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.customersService.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.customersService.name }}
+        app.kubernetes.io/part-of: petclinic
+      annotations:
+        {{- include "petclinic.istioAnnotations" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ .Values.customersService.name }}
+      containers:
+        - name: {{ .Values.customersService.name }}
+          image: "{{ .Values.customersService.image.repository }}:{{ .Values.customersService.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.customersService.service.port }}
+              name: http
+          env:
+            - name: SPRING_CLOUD_CONFIG_URI
+              value: {{ include "petclinic.configServerUrl" . | quote }}
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: {{ include "petclinic.discoveryServerUrl" . | quote }}
+            - name: SPRING_DATASOURCE_URL
+              value: {{ .Values.customersService.database.url | quote }}
+          resources:
+            {{- toYaml .Values.customersService.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: {{ .Values.customersService.service.port }}
+            initialDelaySeconds: {{ .Values.customersService.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.customersService.probes.readiness.periodSeconds }}
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: {{ .Values.customersService.service.port }}
+            initialDelaySeconds: {{ .Values.customersService.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.customersService.probes.liveness.periodSeconds }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.customersService.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+    app: {{ .Values.customersService.name }}
+spec:
+  ports:
+    - port: {{ .Values.customersService.service.port }}
+      targetPort: {{ .Values.customersService.service.port }}
+      name: http
+  selector:
+    app: {{ .Values.customersService.name }}
+{{- end }}
+

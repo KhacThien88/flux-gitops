@@ -1,0 +1,74 @@
+{{- if .Values.discoveryServer.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.discoveryServer.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+    app: {{ .Values.discoveryServer.name }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.discoveryServer.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+    app: {{ .Values.discoveryServer.name }}
+spec:
+  replicas: {{ .Values.discoveryServer.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.discoveryServer.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.discoveryServer.name }}
+        app.kubernetes.io/part-of: petclinic
+      annotations:
+        {{- include "petclinic.istioAnnotations" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ .Values.discoveryServer.name }}
+      containers:
+        - name: {{ .Values.discoveryServer.name }}
+          image: "{{ .Values.discoveryServer.image.repository }}:{{ .Values.discoveryServer.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.discoveryServer.service.port }}
+              name: http
+          env:
+            - name: SPRING_CLOUD_CONFIG_URI
+              value: {{ include "petclinic.configServerUrl" . | quote }}
+          resources:
+            {{- toYaml .Values.discoveryServer.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: {{ .Values.discoveryServer.service.port }}
+            initialDelaySeconds: {{ .Values.discoveryServer.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.discoveryServer.probes.readiness.periodSeconds }}
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: {{ .Values.discoveryServer.service.port }}
+            initialDelaySeconds: {{ .Values.discoveryServer.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.discoveryServer.probes.liveness.periodSeconds }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.discoveryServer.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+    app: {{ .Values.discoveryServer.name }}
+spec:
+  ports:
+    - port: {{ .Values.discoveryServer.service.port }}
+      targetPort: {{ .Values.discoveryServer.service.port }}
+      name: http
+  selector:
+    app: {{ .Values.discoveryServer.name }}
+{{- end }}
+

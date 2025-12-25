@@ -1,0 +1,68 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: petclinic-chart
+  namespace: flux-system
+spec:
+  interval: 5m
+  url: https://github.com/KhacThien88/flux-gitops
+  ref:
+    branch: main
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: petclinic
+  namespace: flux-system
+spec:
+  interval: 30m
+  targetNamespace: petclinic
+  chart:
+    spec:
+      chart: ./charts/petclinic
+      sourceRef:
+        kind: GitRepository
+        name: petclinic-chart
+        namespace: flux-system
+      interval: 12h
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+    timeout: 10m
+  upgrade:
+    remediation:
+      retries: 3
+    timeout: 10m
+  values:
+    global:
+      namespace: petclinic
+      istio:
+        enabled: true
+      imagePullPolicy: IfNotPresent
+    
+    configServer:
+      enabled: true
+      replicaCount: 1
+    
+    discoveryServer:
+      enabled: true
+      replicaCount: 1
+    
+    apiGateway:
+      enabled: true
+      replicaCount: 1
+    
+    customersService:
+      enabled: true
+      replicaCount: 1
+    
+    vetsService:
+      enabled: true
+      replicaCount: 1
+    
+    visitsService:
+      enabled: true
+      replicaCount: 1
+

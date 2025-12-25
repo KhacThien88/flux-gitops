@@ -1,0 +1,71 @@
+{{- if .Values.configServer.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.configServer.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+    app: {{ .Values.configServer.name }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.configServer.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+    app: {{ .Values.configServer.name }}
+spec:
+  replicas: {{ .Values.configServer.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.configServer.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.configServer.name }}
+        app.kubernetes.io/part-of: petclinic
+      annotations:
+        {{- include "petclinic.istioAnnotations" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ .Values.configServer.name }}
+      containers:
+        - name: {{ .Values.configServer.name }}
+          image: "{{ .Values.configServer.image.repository }}:{{ .Values.configServer.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.configServer.service.port }}
+              name: http
+          resources:
+            {{- toYaml .Values.configServer.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: {{ .Values.configServer.service.port }}
+            initialDelaySeconds: {{ .Values.configServer.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.configServer.probes.readiness.periodSeconds }}
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: {{ .Values.configServer.service.port }}
+            initialDelaySeconds: {{ .Values.configServer.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.configServer.probes.liveness.periodSeconds }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.configServer.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+    app: {{ .Values.configServer.name }}
+spec:
+  ports:
+    - port: {{ .Values.configServer.service.port }}
+      targetPort: {{ .Values.configServer.service.port }}
+      name: http
+  selector:
+    app: {{ .Values.configServer.name }}
+{{- end }}
+
