@@ -1,23 +1,29 @@
+{{- if .Values.global.istio.enabled }}
+{{- if .Values.istio.authorizationPolicy.enabled }}
 ---
 # Deny all traffic by default in petclinic namespace
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: deny-all
-  namespace: petclinic
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
 spec:
   {}
 ---
-# Allow api-gateway to receive external traffic
+# Allow api-gateway to receive external traffic from ingress
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: allow-api-gateway-ingress
-  namespace: petclinic
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      app: api-gateway
+      app: {{ .Values.apiGateway.name }}
   action: ALLOW
   rules:
     - from:
@@ -32,7 +38,9 @@ apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: allow-api-gateway-to-services
-  namespace: petclinic
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
@@ -41,69 +49,61 @@ spec:
   rules:
     - from:
         - source:
-            principals: ["cluster.local/ns/petclinic/sa/api-gateway"]
+            principals: ["cluster.local/ns/{{ .Values.global.namespace }}/sa/{{ .Values.apiGateway.name }}"]
 ---
 # Allow customers-service to call visits-service
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: allow-customers-to-visits
-  namespace: petclinic
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      app: visits-service
+      app: {{ .Values.visitsService.name }}
   action: ALLOW
   rules:
     - from:
         - source:
-            principals: ["cluster.local/ns/petclinic/sa/customers-service"]
+            principals: ["cluster.local/ns/{{ .Values.global.namespace }}/sa/{{ .Values.customersService.name }}"]
 ---
-# Allow vets-service to be called by api-gateway only
-apiVersion: security.istio.io/v1
-kind: AuthorizationPolicy
-metadata:
-  name: allow-gateway-to-vets
-  namespace: petclinic
-spec:
-  selector:
-    matchLabels:
-      app: vets-service
-  action: ALLOW
-  rules:
-    - from:
-        - source:
-            principals: ["cluster.local/ns/petclinic/sa/api-gateway"]
----
-# Allow services to call config-server
+# Allow all services to call config-server
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: allow-services-to-config
-  namespace: petclinic
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      app: config-server
+      app: {{ .Values.configServer.name }}
   action: ALLOW
   rules:
     - from:
         - source:
-            namespaces: ["petclinic"]
+            namespaces: ["{{ .Values.global.namespace }}"]
 ---
-# Allow services to call discovery-server (Eureka)
+# Allow all services to call discovery-server (Eureka)
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
   name: allow-services-to-discovery
-  namespace: petclinic
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      app: discovery-server
+      app: {{ .Values.discoveryServer.name }}
   action: ALLOW
   rules:
     - from:
         - source:
-            namespaces: ["petclinic"]
+            namespaces: ["{{ .Values.global.namespace }}"]
+{{- end }}
+{{- end }}
 

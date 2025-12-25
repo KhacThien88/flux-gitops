@@ -1,0 +1,143 @@
+{{- if .Values.global.istio.enabled }}
+{{- if .Values.istio.virtualService.enabled }}
+---
+# VirtualService for api-gateway with retry policy
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: {{ .Values.apiGateway.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+spec:
+  hosts:
+    - {{ .Values.apiGateway.name }}
+  http:
+    - route:
+        - destination:
+            host: {{ .Values.apiGateway.name }}
+            port:
+              number: {{ .Values.apiGateway.service.port }}
+      timeout: {{ .Values.istio.virtualService.timeout }}
+      retries:
+        attempts: {{ .Values.istio.virtualService.retries.attempts }}
+        perTryTimeout: {{ .Values.istio.virtualService.retries.perTryTimeout }}
+        retryOn: {{ .Values.istio.virtualService.retries.retryOn }}
+---
+# VirtualService for customers-service with retry policy
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: {{ .Values.customersService.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+spec:
+  hosts:
+    - {{ .Values.customersService.name }}
+  http:
+    - route:
+        - destination:
+            host: {{ .Values.customersService.name }}
+            port:
+              number: {{ .Values.customersService.service.port }}
+      timeout: {{ .Values.istio.virtualService.timeout }}
+      retries:
+        attempts: {{ .Values.istio.virtualService.retries.attempts }}
+        perTryTimeout: {{ .Values.istio.virtualService.retries.perTryTimeout }}
+        retryOn: {{ .Values.istio.virtualService.retries.retryOn }}
+---
+# VirtualService for vets-service with retry policy
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: {{ .Values.vetsService.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+spec:
+  hosts:
+    - {{ .Values.vetsService.name }}
+  http:
+    - route:
+        - destination:
+            host: {{ .Values.vetsService.name }}
+            port:
+              number: {{ .Values.vetsService.service.port }}
+      timeout: {{ .Values.istio.virtualService.timeout }}
+      retries:
+        attempts: {{ .Values.istio.virtualService.retries.attempts }}
+        perTryTimeout: {{ .Values.istio.virtualService.retries.perTryTimeout }}
+        retryOn: {{ .Values.istio.virtualService.retries.retryOn }}
+---
+# VirtualService for visits-service with retry policy
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: {{ .Values.visitsService.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+spec:
+  hosts:
+    - {{ .Values.visitsService.name }}
+  http:
+    - route:
+        - destination:
+            host: {{ .Values.visitsService.name }}
+            port:
+              number: {{ .Values.visitsService.service.port }}
+      timeout: {{ .Values.istio.virtualService.timeout }}
+      retries:
+        attempts: {{ .Values.istio.virtualService.retries.attempts }}
+        perTryTimeout: {{ .Values.istio.virtualService.retries.perTryTimeout }}
+        retryOn: {{ .Values.istio.virtualService.retries.retryOn }}
+---
+# VirtualService for config-server
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: {{ .Values.configServer.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+spec:
+  hosts:
+    - {{ .Values.configServer.name }}
+  http:
+    - route:
+        - destination:
+            host: {{ .Values.configServer.name }}
+            port:
+              number: {{ .Values.configServer.service.port }}
+      timeout: 30s
+      retries:
+        attempts: 5
+        perTryTimeout: 6s
+        retryOn: 5xx,reset,connect-failure
+---
+# VirtualService for discovery-server (Eureka)
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: {{ .Values.discoveryServer.name }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+spec:
+  hosts:
+    - {{ .Values.discoveryServer.name }}
+  http:
+    - route:
+        - destination:
+            host: {{ .Values.discoveryServer.name }}
+            port:
+              number: {{ .Values.discoveryServer.service.port }}
+      timeout: 30s
+      retries:
+        attempts: 5
+        perTryTimeout: 6s
+        retryOn: 5xx,reset,connect-failure
+{{- end }}
+{{- end }}
+

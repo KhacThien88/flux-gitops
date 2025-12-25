@@ -16,6 +16,26 @@ global:
   labels:
     app.kubernetes.io/part-of: petclinic
 
+# Istio configuration (mTLS, policies, virtualservices, gateway)
+istio:
+  # Authorization policies
+  authorizationPolicy:
+    enabled: true
+  
+  # Virtual services with retry
+  virtualService:
+    enabled: true
+    timeout: 15s
+    retries:
+      attempts: 3
+      perTryTimeout: 5s
+      retryOn: "5xx,reset,connect-failure"
+  
+  # Ingress gateway
+  gateway:
+    enabled: true
+    host: "*"
+
 # Config Server
 configServer:
   enabled: true
@@ -189,4 +209,3 @@ adminServer:
     limits:
       cpu: 500m
       memory: 512Mi
-

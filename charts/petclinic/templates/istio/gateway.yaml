@@ -1,0 +1,50 @@
+{{- if .Values.global.istio.enabled }}
+{{- if .Values.istio.gateway.enabled }}
+---
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: petclinic-gateway
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - {{ .Values.istio.gateway.host | default "*" | quote }}
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: petclinic-ingress
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+spec:
+  hosts:
+    - {{ .Values.istio.gateway.host | default "*" | quote }}
+  gateways:
+    - petclinic-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: {{ .Values.apiGateway.name }}
+            port:
+              number: {{ .Values.apiGateway.service.port }}
+      timeout: {{ .Values.istio.virtualService.timeout }}
+      retries:
+        attempts: {{ .Values.istio.virtualService.retries.attempts }}
+        perTryTimeout: {{ .Values.istio.virtualService.retries.perTryTimeout }}
+        retryOn: {{ .Values.istio.virtualService.retries.retryOn }}
+{{- end }}
+{{- end }}
+

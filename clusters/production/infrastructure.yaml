@@ -7,16 +7,10 @@ metadata:
 spec:
   interval: 10m
   retryInterval: 1m
-  timeout: 5m
+  timeout: 10m
   sourceRef:
     kind: GitRepository
     name: flux-system
   path: ./infrastructure/overlays/production
   prune: true
   wait: true
-  healthChecks:
-    - apiVersion: apps/v1
-      kind: Deployment
-      name: istiod
-      namespace: istio-system
-
