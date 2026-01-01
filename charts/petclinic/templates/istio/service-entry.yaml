@@ -1,0 +1,50 @@
+{{- if .Values.global.istio.enabled }}
+---
+# Allow egress to GitHub for config-server
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: github-egress
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+spec:
+  hosts:
+    - github.com
+    - "*.github.com"
+    - "*.githubusercontent.com"
+  ports:
+    - number: 443
+      name: https
+      protocol: TLS
+    - number: 80
+      name: http
+      protocol: HTTP
+  resolution: DNS
+  location: MESH_EXTERNAL
+---
+# Allow egress to any external service (for development)
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: external-https
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+spec:
+  hosts:
+    - "*.io"
+    - "*.com"
+    - "*.org"
+    - "*.net"
+  ports:
+    - number: 443
+      name: https
+      protocol: TLS
+    - number: 80
+      name: http
+      protocol: HTTP
+  resolution: NONE
+  location: MESH_EXTERNAL
+{{- end }}
+
