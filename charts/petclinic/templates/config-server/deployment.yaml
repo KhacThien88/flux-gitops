@@ -37,6 +37,11 @@ spec:
           ports:
             - containerPort: {{ .Values.configServer.service.port }}
               name: http
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "native"
+            - name: SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS
+              value: "classpath:/config"
           resources:
             {{- toYaml .Values.configServer.resources | nindent 12 }}
           readinessProbe:
