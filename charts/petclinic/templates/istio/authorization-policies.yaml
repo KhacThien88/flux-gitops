@@ -12,7 +12,7 @@ metadata:
 spec:
   {}
 ---
-# Allow api-gateway to receive external traffic from ingress
+# Allow api-gateway to receive external traffic from ingress gateway
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
@@ -29,9 +29,11 @@ spec:
     - from:
         - source:
             namespaces: ["istio-system"]
+        - source:
+            principals: ["cluster.local/ns/istio-system/sa/istio-gateway"]
       to:
         - operation:
-            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"]
 ---
 # Allow api-gateway to call all internal services
 apiVersion: security.istio.io/v1

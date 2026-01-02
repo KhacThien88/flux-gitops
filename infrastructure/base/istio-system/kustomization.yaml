@@ -6,4 +6,5 @@ resources:
   - istio-base.yaml
   - istiod.yaml
   - istio-gateway.yaml
+  - kiali.yaml
 
