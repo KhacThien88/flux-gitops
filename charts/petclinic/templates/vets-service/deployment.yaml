@@ -38,6 +38,8 @@ spec:
             - containerPort: {{ .Values.vetsService.service.port }}
               name: http
           env:
+            - name: SERVER_PORT
+              value: "{{ .Values.vetsService.service.port }}"
             - name: SPRING_CLOUD_CONFIG_URI
               value: {{ include "petclinic.configServerUrl" . | quote }}
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
