@@ -40,6 +40,13 @@ spec:
           env:
             - name: SPRING_CLOUD_CONFIG_URI
               value: {{ include "petclinic.configServerUrl" . | quote }}
+            # Standalone Eureka mode - don't try to register with other servers
+            - name: EUREKA_CLIENT_REGISTER_WITH_EUREKA
+              value: "false"
+            - name: EUREKA_CLIENT_FETCH_REGISTRY
+              value: "false"
+            - name: EUREKA_SERVER_ENABLE_SELF_PRESERVATION
+              value: "false"
           resources:
             {{- toYaml .Values.discoveryServer.resources | nindent 12 }}
           readinessProbe:
