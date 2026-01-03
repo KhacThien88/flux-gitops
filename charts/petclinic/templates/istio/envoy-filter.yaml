@@ -10,6 +10,9 @@ metadata:
   labels:
     {{- include "petclinic.labels" . | nindent 4 }}
 spec:
+  workloadSelector:
+    labels:
+      app.kubernetes.io/part-of: petclinic
   configPatches:
   - applyTo: HTTP_FILTER
     match:
@@ -29,6 +32,7 @@ spec:
           inlineCode: |
             function envoy_on_request(request_handle)
               request_handle:headers():remove("upgrade")
+              request_handle:headers():remove("connection")
             end
 {{- end }}
 
