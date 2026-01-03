@@ -20,11 +20,11 @@ spec:
             namespaces: ["istio-system"]
 ---
 # Allow all internal traffic within petclinic namespace
-# This is needed for Eureka service discovery and Config Server
+# This enables Eureka service discovery and Config Server communication
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
-  name: allow-internal-traffic
+  name: allow-internal-petclinic
   namespace: {{ .Values.global.namespace }}
   labels:
     {{- include "petclinic.labels" . | nindent 4 }}
@@ -34,21 +34,5 @@ spec:
     - from:
         - source:
             namespaces: ["{{ .Values.global.namespace }}"]
----
-# Example: Deny traffic from other namespaces (except istio-system for gateway)
-# This demonstrates service-to-service authorization
-apiVersion: security.istio.io/v1
-kind: AuthorizationPolicy
-metadata:
-  name: deny-external-namespaces
-  namespace: {{ .Values.global.namespace }}
-  labels:
-    {{- include "petclinic.labels" . | nindent 4 }}
-spec:
-  action: DENY
-  rules:
-    - from:
-        - source:
-            notNamespaces: ["{{ .Values.global.namespace }}", "istio-system"]
 {{- end }}
 {{- end }}
