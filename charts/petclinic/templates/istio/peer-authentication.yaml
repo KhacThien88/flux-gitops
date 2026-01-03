@@ -1,6 +1,7 @@
 {{- if .Values.global.istio.enabled }}
 ---
-# Enable STRICT mTLS for petclinic namespace
+# Enable PERMISSIVE mTLS for petclinic namespace
+# PERMISSIVE allows both mTLS and plaintext to support services without sidecar
 apiVersion: security.istio.io/v1
 kind: PeerAuthentication
 metadata:
@@ -10,9 +11,9 @@ metadata:
     {{- include "petclinic.labels" . | nindent 4 }}
 spec:
   mtls:
-    mode: STRICT
+    mode: PERMISSIVE
 ---
-# DestinationRule to enforce mTLS for all services in petclinic
+# DestinationRule for services WITH sidecar - use mTLS
 apiVersion: networking.istio.io/v1
 kind: DestinationRule
 metadata:
@@ -26,12 +27,11 @@ spec:
     tls:
       mode: ISTIO_MUTUAL
 ---
-# DestinationRule for discovery-server to force HTTP/1.1
-# This fixes Eureka client issues with HTTP/2 upgrades
+# DestinationRule for discovery-server - DISABLE TLS (no sidecar)
 apiVersion: networking.istio.io/v1
 kind: DestinationRule
 metadata:
-  name: discovery-server-http1
+  name: discovery-server-no-tls
   namespace: {{ .Values.global.namespace }}
   labels:
     {{- include "petclinic.labels" . | nindent 4 }}
@@ -39,9 +39,20 @@ spec:
   host: {{ .Values.discoveryServer.name }}.{{ .Values.global.namespace }}.svc.cluster.local
   trafficPolicy:
     tls:
-      mode: ISTIO_MUTUAL
-    connectionPool:
-      http:
-        h2UpgradePolicy: DO_NOT_UPGRADE
+      mode: DISABLE
+---
+# DestinationRule for config-server - DISABLE TLS (no sidecar)
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: config-server-no-tls
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+spec:
+  host: {{ .Values.configServer.name }}.{{ .Values.global.namespace }}.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: DISABLE
 {{- end }}
 
