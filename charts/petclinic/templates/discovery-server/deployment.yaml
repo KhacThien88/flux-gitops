@@ -27,8 +27,7 @@ spec:
         app: {{ .Values.discoveryServer.name }}
         app.kubernetes.io/part-of: petclinic
       annotations:
-        # Disable sidecar for discovery-server to fix Apache HttpClient 5 compatibility
-        sidecar.istio.io/inject: "false"
+        {{- include "petclinic.istioAnnotations" . | nindent 8 }}
     spec:
       serviceAccountName: {{ .Values.discoveryServer.name }}
       containers:
@@ -41,10 +40,8 @@ spec:
           env:
             - name: SPRING_CLOUD_CONFIG_URI
               value: {{ include "petclinic.configServerUrl" . | quote }}
-            # Force port 8761
             - name: SERVER_PORT
               value: "8761"
-            # Standalone Eureka mode - don't try to register with other servers
             - name: EUREKA_CLIENT_REGISTER_WITH_EUREKA
               value: "false"
             - name: EUREKA_CLIENT_FETCH_REGISTRY
@@ -82,4 +79,3 @@ spec:
   selector:
     app: {{ .Values.discoveryServer.name }}
 {{- end }}
-

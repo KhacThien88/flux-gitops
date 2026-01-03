@@ -46,10 +46,8 @@ spec:
               value: {{ include "petclinic.discoveryServerUrl" . | quote }}
             - name: EUREKA_INSTANCE_HOSTNAME
               value: {{ .Values.visitsService.name | quote }}
-            - name: EUREKA_CLIENT_DISABLE_DELTA
-              value: "true"
             - name: SPRING_APPLICATION_JSON
-              value: '{"eureka":{"client":{"serviceUrl":{"defaultZone":"{{ include "petclinic.discoveryServerUrl" . }}"},"disableDelta":true},"instance":{"hostname":"{{ .Values.visitsService.name }}","preferIpAddress":false}}}'
+              value: '{"eureka":{"client":{"serviceUrl":{"defaultZone":"{{ include "petclinic.discoveryServerUrl" . }}"}},"instance":{"hostname":"{{ .Values.visitsService.name }}"}}}'
             - name: SPRING_DATASOURCE_URL
               value: {{ .Values.visitsService.database.url | quote }}
           resources:
@@ -83,4 +81,3 @@ spec:
   selector:
     app: {{ .Values.visitsService.name }}
 {{- end }}
-

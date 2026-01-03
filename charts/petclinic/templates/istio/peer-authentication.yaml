@@ -1,7 +1,6 @@
 {{- if .Values.global.istio.enabled }}
 ---
-# Enable PERMISSIVE mTLS for petclinic namespace
-# PERMISSIVE allows both mTLS and plaintext to support services without sidecar
+# Enable STRICT mTLS for petclinic namespace
 apiVersion: security.istio.io/v1
 kind: PeerAuthentication
 metadata:
@@ -11,9 +10,9 @@ metadata:
     {{- include "petclinic.labels" . | nindent 4 }}
 spec:
   mtls:
-    mode: PERMISSIVE
+    mode: STRICT
 ---
-# DestinationRule for services WITH sidecar - use mTLS
+# DestinationRule to enforce mTLS for all services in petclinic
 apiVersion: networking.istio.io/v1
 kind: DestinationRule
 metadata:
@@ -26,33 +25,4 @@ spec:
   trafficPolicy:
     tls:
       mode: ISTIO_MUTUAL
----
-# DestinationRule for discovery-server - DISABLE TLS (no sidecar)
-apiVersion: networking.istio.io/v1
-kind: DestinationRule
-metadata:
-  name: discovery-server-no-tls
-  namespace: {{ .Values.global.namespace }}
-  labels:
-    {{- include "petclinic.labels" . | nindent 4 }}
-spec:
-  host: {{ .Values.discoveryServer.name }}.{{ .Values.global.namespace }}.svc.cluster.local
-  trafficPolicy:
-    tls:
-      mode: DISABLE
----
-# DestinationRule for config-server - DISABLE TLS (no sidecar)
-apiVersion: networking.istio.io/v1
-kind: DestinationRule
-metadata:
-  name: config-server-no-tls
-  namespace: {{ .Values.global.namespace }}
-  labels:
-    {{- include "petclinic.labels" . | nindent 4 }}
-spec:
-  host: {{ .Values.configServer.name }}.{{ .Values.global.namespace }}.svc.cluster.local
-  trafficPolicy:
-    tls:
-      mode: DISABLE
 {{- end }}
-

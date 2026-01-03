@@ -27,8 +27,7 @@ spec:
         app: {{ .Values.configServer.name }}
         app.kubernetes.io/part-of: petclinic
       annotations:
-        # Disable sidecar for config-server
-        sidecar.istio.io/inject: "false"
+        {{- include "petclinic.istioAnnotations" . | nindent 8 }}
     spec:
       serviceAccountName: {{ .Values.configServer.name }}
       containers:
@@ -74,4 +73,3 @@ spec:
   selector:
     app: {{ .Values.configServer.name }}
 {{- end }}
-

@@ -46,14 +46,8 @@ spec:
               value: {{ include "petclinic.discoveryServerUrl" . | quote }}
             - name: EUREKA_INSTANCE_HOSTNAME
               value: {{ .Values.apiGateway.name | quote }}
-            # Disable delta fetch to avoid upgrade_failed issue
-            - name: EUREKA_CLIENT_DISABLE_DELTA
-              value: "true"
-            - name: EUREKA_CLIENT_REGISTRY_FETCH_INTERVAL_SECONDS
-              value: "5"
-            # Also set using Java property format for Spring Boot compatibility
             - name: SPRING_APPLICATION_JSON
-              value: '{"eureka":{"client":{"serviceUrl":{"defaultZone":"{{ include "petclinic.discoveryServerUrl" . }}"},"disableDelta":true,"registryFetchIntervalSeconds":5},"instance":{"hostname":"{{ .Values.apiGateway.name }}","preferIpAddress":false}}}'
+              value: '{"eureka":{"client":{"serviceUrl":{"defaultZone":"{{ include "petclinic.discoveryServerUrl" . }}"}},"instance":{"hostname":"{{ .Values.apiGateway.name }}"}}}'
           resources:
             {{- toYaml .Values.apiGateway.resources | nindent 12 }}
           readinessProbe:
@@ -85,4 +79,3 @@ spec:
   selector:
     app: {{ .Values.apiGateway.name }}
 {{- end }}
-
