@@ -36,6 +36,9 @@ Pod annotations for Istio
 {{- define "petclinic.istioAnnotations" -}}
 {{- if .Values.global.istio.enabled }}
 sidecar.istio.io/inject: "true"
+# Exclude Eureka and Config Server ports from sidecar to fix Apache HttpClient 5.4+ issue
+# Reference: https://github.com/istio/istio/issues/53239
+traffic.sidecar.istio.io/excludeOutboundPorts: "8761,8888"
 {{- end }}
 {{- end }}
 

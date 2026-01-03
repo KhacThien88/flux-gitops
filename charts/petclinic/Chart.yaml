@@ -2,7 +2,7 @@ apiVersion: v2
 name: petclinic
 description: Spring PetClinic Microservices Helm Chart
 type: application
-version: 1.0.22
+version: 1.0.23
 appVersion: "3.2.0"
 keywords:
   - spring
