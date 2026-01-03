@@ -14,25 +14,19 @@ spec:
     labels:
       app.kubernetes.io/part-of: petclinic
   configPatches:
-  - applyTo: HTTP_FILTER
+  - applyTo: NETWORK_FILTER
     match:
       context: SIDECAR_OUTBOUND
       listener:
+        portNumber: 8761
         filterChain:
           filter:
             name: envoy.filters.network.http_connection_manager
-            subFilter:
-              name: envoy.filters.http.router
     patch:
-      operation: INSERT_BEFORE
+      operation: MERGE
       value:
-        name: envoy.filters.http.lua
         typed_config:
-          "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
-          inlineCode: |
-            function envoy_on_request(request_handle)
-              request_handle:headers():remove("upgrade")
-              request_handle:headers():remove("connection")
-            end
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+          upgrade_configs: []
 {{- end }}
 
