@@ -1,22 +1,11 @@
 {{- if .Values.global.istio.enabled }}
 {{- if .Values.istio.authorizationPolicy.enabled }}
 ---
-# Deny all traffic by default in petclinic namespace
+# Allow traffic from Istio Ingress Gateway to api-gateway
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
-  name: deny-all
-  namespace: {{ .Values.global.namespace }}
-  labels:
-    {{- include "petclinic.labels" . | nindent 4 }}
-spec:
-  {}
----
-# Allow api-gateway to receive external traffic from ingress gateway
-apiVersion: security.istio.io/v1
-kind: AuthorizationPolicy
-metadata:
-  name: allow-api-gateway-ingress
+  name: allow-ingress-gateway
   namespace: {{ .Values.global.namespace }}
   labels:
     {{- include "petclinic.labels" . | nindent 4 }}
@@ -29,83 +18,37 @@ spec:
     - from:
         - source:
             namespaces: ["istio-system"]
-        - source:
-            principals: ["cluster.local/ns/istio-system/sa/istio-gateway"]
-      to:
-        - operation:
-            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"]
 ---
-# Allow api-gateway to call all internal services
+# Allow all internal traffic within petclinic namespace
+# This is needed for Eureka service discovery and Config Server
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
-  name: allow-api-gateway-to-services
+  name: allow-internal-traffic
   namespace: {{ .Values.global.namespace }}
   labels:
     {{- include "petclinic.labels" . | nindent 4 }}
 spec:
-  selector:
-    matchLabels:
-      app.kubernetes.io/part-of: petclinic
-  action: ALLOW
-  rules:
-    - from:
-        - source:
-            principals: ["cluster.local/ns/{{ .Values.global.namespace }}/sa/{{ .Values.apiGateway.name }}"]
----
-# Allow customers-service to call visits-service
-apiVersion: security.istio.io/v1
-kind: AuthorizationPolicy
-metadata:
-  name: allow-customers-to-visits
-  namespace: {{ .Values.global.namespace }}
-  labels:
-    {{- include "petclinic.labels" . | nindent 4 }}
-spec:
-  selector:
-    matchLabels:
-      app: {{ .Values.visitsService.name }}
-  action: ALLOW
-  rules:
-    - from:
-        - source:
-            principals: ["cluster.local/ns/{{ .Values.global.namespace }}/sa/{{ .Values.customersService.name }}"]
----
-# Allow all services to call config-server
-apiVersion: security.istio.io/v1
-kind: AuthorizationPolicy
-metadata:
-  name: allow-services-to-config
-  namespace: {{ .Values.global.namespace }}
-  labels:
-    {{- include "petclinic.labels" . | nindent 4 }}
-spec:
-  selector:
-    matchLabels:
-      app: {{ .Values.configServer.name }}
   action: ALLOW
   rules:
     - from:
         - source:
             namespaces: ["{{ .Values.global.namespace }}"]
 ---
-# Allow all services to call discovery-server (Eureka)
+# Example: Deny traffic from other namespaces (except istio-system for gateway)
+# This demonstrates service-to-service authorization
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
-  name: allow-services-to-discovery
+  name: deny-external-namespaces
   namespace: {{ .Values.global.namespace }}
   labels:
     {{- include "petclinic.labels" . | nindent 4 }}
 spec:
-  selector:
-    matchLabels:
-      app: {{ .Values.discoveryServer.name }}
-  action: ALLOW
+  action: DENY
   rules:
     - from:
         - source:
-            namespaces: ["{{ .Values.global.namespace }}"]
+            notNamespaces: ["{{ .Values.global.namespace }}", "istio-system"]
 {{- end }}
 {{- end }}
-
