@@ -25,5 +25,23 @@ spec:
   trafficPolicy:
     tls:
       mode: ISTIO_MUTUAL
+---
+# DestinationRule for discovery-server to force HTTP/1.1
+# This fixes Eureka client issues with HTTP/2 upgrades
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: discovery-server-http1
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "petclinic.labels" . | nindent 4 }}
+spec:
+  host: {{ .Values.discoveryServer.name }}.{{ .Values.global.namespace }}.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+    connectionPool:
+      http:
+        h2UpgradePolicy: DO_NOT_UPGRADE
 {{- end }}
 
