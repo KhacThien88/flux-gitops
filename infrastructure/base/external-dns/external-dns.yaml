@@ -46,10 +46,7 @@ spec:
       - istio-virtualservice
     # Domain filter - update with your domain
     domainFilters: []
-    # Cloudflare specific settings
-    extraArgs:
-      - --cloudflare-proxied=false
-      - --cloudflare-dns-records-per-page=100
+    # Policy
     policy: sync
     registry: txt
     txtOwnerId: external-dns
