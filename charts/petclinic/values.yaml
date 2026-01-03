@@ -35,8 +35,8 @@ istio:
   gateway:
     enabled: true
     host: "petclinic.kteight.online"
-    # Target IP for ExternalDNS (Istio Gateway LoadBalancer IP)
-    targetIP: "10.2.207.101"
+    # Target IP for ExternalDNS (pfSense Public IP)
+    targetIP: "45.119.214.133"
 
 # Config Server
 configServer:
