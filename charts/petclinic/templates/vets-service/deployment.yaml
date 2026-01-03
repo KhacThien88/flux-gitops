@@ -44,8 +44,10 @@ spec:
               value: {{ include "petclinic.configServerUrl" . | quote }}
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
               value: {{ include "petclinic.discoveryServerUrl" . | quote }}
+            - name: EUREKA_INSTANCE_HOSTNAME
+              value: {{ .Values.vetsService.name | quote }}
             - name: SPRING_APPLICATION_JSON
-              value: '{"eureka":{"client":{"serviceUrl":{"defaultZone":"{{ include "petclinic.discoveryServerUrl" . }}"}}}}'
+              value: '{"eureka":{"client":{"serviceUrl":{"defaultZone":"{{ include "petclinic.discoveryServerUrl" . }}"}},"instance":{"hostname":"{{ .Values.vetsService.name }}"}}}'
             - name: SPRING_DATASOURCE_URL
               value: {{ .Values.vetsService.database.url | quote }}
           resources:

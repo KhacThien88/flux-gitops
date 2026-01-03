@@ -44,9 +44,11 @@ spec:
               value: {{ include "petclinic.configServerUrl" . | quote }}
             - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
               value: {{ include "petclinic.discoveryServerUrl" . | quote }}
+            - name: EUREKA_INSTANCE_HOSTNAME
+              value: {{ .Values.apiGateway.name | quote }}
             # Also set using Java property format for Spring Boot compatibility
             - name: SPRING_APPLICATION_JSON
-              value: '{"eureka":{"client":{"serviceUrl":{"defaultZone":"{{ include "petclinic.discoveryServerUrl" . }}"}}}}'
+              value: '{"eureka":{"client":{"serviceUrl":{"defaultZone":"{{ include "petclinic.discoveryServerUrl" . }}"}},"instance":{"hostname":"{{ .Values.apiGateway.name }}"}}}'
           resources:
             {{- toYaml .Values.apiGateway.resources | nindent 12 }}
           readinessProbe:
