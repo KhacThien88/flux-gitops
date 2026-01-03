@@ -34,7 +34,9 @@ istio:
   # Ingress gateway
   gateway:
     enabled: true
-    host: "*"
+    host: "petclinic.kteight.online"
+    # Target IP for ExternalDNS (Istio Gateway LoadBalancer IP)
+    targetIP: "10.2.207.101"
 
 # Config Server
 configServer:

@@ -44,8 +44,9 @@ spec:
       - ingress
       - istio-gateway
       - istio-virtualservice
-    # Domain filter - update with your domain
-    domainFilters: []
+    # Domain filter - only manage kteight.online
+    domainFilters:
+      - kteight.online
     # Policy
     policy: sync
     registry: txt

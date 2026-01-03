@@ -8,6 +8,10 @@ metadata:
   namespace: {{ .Values.global.namespace }}
   labels:
     {{- include "petclinic.labels" . | nindent 4 }}
+  annotations:
+    # ExternalDNS annotation to create DNS record
+    external-dns.alpha.kubernetes.io/hostname: {{ .Values.istio.gateway.host | quote }}
+    external-dns.alpha.kubernetes.io/target: {{ .Values.istio.gateway.targetIP | default "" | quote }}
 spec:
   selector:
     istio: gateway
@@ -17,7 +21,7 @@ spec:
         name: http
         protocol: HTTP
       hosts:
-        - {{ .Values.istio.gateway.host | default "*" | quote }}
+        - {{ .Values.istio.gateway.host | quote }}
 ---
 apiVersion: networking.istio.io/v1
 kind: VirtualService
@@ -26,9 +30,12 @@ metadata:
   namespace: {{ .Values.global.namespace }}
   labels:
     {{- include "petclinic.labels" . | nindent 4 }}
+  annotations:
+    # ExternalDNS annotation
+    external-dns.alpha.kubernetes.io/hostname: {{ .Values.istio.gateway.host | quote }}
 spec:
   hosts:
-    - {{ .Values.istio.gateway.host | default "*" | quote }}
+    - {{ .Values.istio.gateway.host | quote }}
   gateways:
     - petclinic-gateway
   http:
