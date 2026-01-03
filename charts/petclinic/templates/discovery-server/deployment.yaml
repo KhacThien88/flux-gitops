@@ -27,7 +27,8 @@ spec:
         app: {{ .Values.discoveryServer.name }}
         app.kubernetes.io/part-of: petclinic
       annotations:
-        {{- include "petclinic.istioAnnotations" . | nindent 8 }}
+        # Disable sidecar for discovery-server to fix Apache HttpClient 5 compatibility
+        sidecar.istio.io/inject: "false"
     spec:
       serviceAccountName: {{ .Values.discoveryServer.name }}
       containers:
